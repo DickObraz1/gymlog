@@ -84,7 +84,7 @@ export default function ActiveWorkoutPage() {
       <Celebration show={showCelebration} onDone={() => setShowCelebration(false)} />
 
       {/* Top progress bar */}
-      <div style={{ padding: '12px 16px 0', background: 'var(--bg)' }}>
+      <div style={{ padding: '12px 16px 0', paddingTop: 'max(12px, calc(env(safe-area-inset-top) + 8px))', background: 'var(--bg)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <button
             className="btn-ghost"

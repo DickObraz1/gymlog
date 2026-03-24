@@ -33,6 +33,7 @@ export default function LoginPage() {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '32px 24px',
+        paddingTop: 'max(32px, calc(env(safe-area-inset-top) + 24px))',
         gap: 8,
       }}
     >
