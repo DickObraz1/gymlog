@@ -20,7 +20,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="page-content" style={{ paddingTop: 24 }}>
+    <div className="page-content" style={{ paddingTop: 'max(24px, calc(env(safe-area-inset-top) + 16px))' }}>
       <div style={{ marginBottom: 28 }}>
         <h1>Ahoj, {currentUser?.name}! 👋</h1>
         <p className="text-muted" style={{ marginTop: 6 }}>Připraven na trénink?</p>

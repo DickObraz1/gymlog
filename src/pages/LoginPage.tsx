@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUsers } from '../hooks/useUsers';
 import { useCurrentUser } from '../hooks/useCurrentUser';
@@ -10,6 +10,24 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
+  const [showAdmin, setShowAdmin] = useState(false);
+  const tapCountRef = useRef(0);
+  const tapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleBicepTap = () => {
+    tapCountRef.current += 1;
+    if (tapTimeoutRef.current) clearTimeout(tapTimeoutRef.current);
+    if (tapCountRef.current >= 5) {
+      setShowAdmin(true);
+      tapCountRef.current = 0;
+      return;
+    }
+    tapTimeoutRef.current = setTimeout(() => {
+      tapCountRef.current = 0;
+    }, 1500);
+  };
+
+  const visibleUsers = users.filter((u) => showAdmin || u.id !== 'admin');
 
   const selectUser = (user: User) => {
     setCurrentUser(user);
@@ -39,7 +57,7 @@ export default function LoginPage() {
     >
       {/* Logo */}
       <div style={{ textAlign: 'center', marginBottom: 40 }}>
-        <div style={{ fontSize: 64, marginBottom: 12 }}>💪</div>
+        <div style={{ fontSize: 64, marginBottom: 12, cursor: 'default', userSelect: 'none' }} onClick={handleBicepTap}>💪</div>
         <h1 style={{ fontSize: 36, letterSpacing: -1 }}>GymLog</h1>
         <p className="text-muted" style={{ marginTop: 6 }}>Sleduj svůj pokrok</p>
       </div>
@@ -50,7 +68,7 @@ export default function LoginPage() {
         </h2>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {users.map((user) => (
+          {visibleUsers.map((user) => (
             <button
               key={user.id}
               className="btn-secondary"

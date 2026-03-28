@@ -14,10 +14,11 @@ import {
 
 export default function HistoryPage() {
   const { currentUser } = useCurrentUser();
-  const { getUserSessions, getExerciseHistory } = useSessionHistory();
+  const { getUserSessions, getExerciseHistory, deleteSession } = useSessionHistory();
   const { workouts, getExercise } = useWorkouts();
   const [expandedSession, setExpandedSession] = useState<string | null>(null);
   const [chartExerciseId, setChartExerciseId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   if (!currentUser) return null;
 
@@ -111,19 +112,30 @@ export default function HistoryPage() {
               <div
                 key={session.id}
                 className="card"
-                style={{ marginBottom: 8, cursor: 'pointer' }}
-                onClick={() => setExpandedSession(isExpanded ? null : session.id)}
+                style={{ marginBottom: 8 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                  onClick={() => setExpandedSession(isExpanded ? null : session.id)}
+                >
                   <div>
                     <div style={{ fontWeight: 600 }}>{workout?.name ?? 'Trénink'}</div>
                     <div style={{ fontSize: 13, color: 'var(--text3)', marginTop: 2 }}>
                       {session.sets.length} cviků · {totalVolume} kg objem
                     </div>
                   </div>
-                  <span style={{ color: 'var(--text3)', fontSize: 18 }}>
-                    {isExpanded ? '▲' : '▼'}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(session.id); }}
+                      style={{ color: 'var(--red)', fontSize: 18, padding: '4px 6px', lineHeight: 1 }}
+                      title="Smazat trénink"
+                    >
+                      🗑
+                    </button>
+                    <span style={{ color: 'var(--text3)', fontSize: 18 }}>
+                      {isExpanded ? '▲' : '▼'}
+                    </span>
+                  </div>
                 </div>
 
                 {isExpanded && (
@@ -153,6 +165,28 @@ export default function HistoryPage() {
           })}
         </div>
       ))}
+      {confirmDeleteId && (
+        <div className="modal-overlay center" onClick={() => setConfirmDeleteId(null)}>
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ marginBottom: 12 }}>Smazat trénink?</h3>
+            <p className="text-muted" style={{ marginBottom: 20, fontSize: 15 }}>
+              Tato akce je nevratná.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button className="btn-secondary" onClick={() => setConfirmDeleteId(null)}>
+                Zrušit
+              </button>
+              <button
+                className="btn-ghost"
+                onClick={() => { deleteSession(confirmDeleteId); setConfirmDeleteId(null); }}
+                style={{ color: 'var(--red)' }}
+              >
+                Smazat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
