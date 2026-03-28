@@ -19,6 +19,8 @@ export default function ActiveWorkoutPage() {
     completeSession,
     getLastExerciseEntry,
     getPersonalBest,
+    getIncompleteSession,
+    deleteSession,
   } = useSessionHistory();
 
   const workout = workouts.find((w) => w.id === workoutId);
@@ -35,11 +37,28 @@ export default function ActiveWorkoutPage() {
 
   useEffect(() => {
     if (!workout || !currentUser || sessionRef.current) return;
-    const session = startSession(currentUser.id, workout.id);
-    sessionRef.current = session.id;
-    setSessionId(session.id);
-    startTimeRef.current = new Date();
-  }, [workout, currentUser, startSession]);
+
+    const existing = getIncompleteSession(currentUser.id, workout.id);
+    if (existing) {
+      sessionRef.current = existing.id;
+      setSessionId(existing.id);
+      const restoredSets: Record<string, SetEntry[]> = {};
+      const restoredCompleted = new Set<string>();
+      for (const entry of existing.sets) {
+        if (entry.sets.length > 0) {
+          restoredSets[entry.exerciseId] = entry.sets;
+          restoredCompleted.add(entry.exerciseId);
+        }
+      }
+      setSessionSets(restoredSets);
+      setCompletedExercises(restoredCompleted);
+    } else {
+      const session = startSession(currentUser.id, workout.id);
+      sessionRef.current = session.id;
+      setSessionId(session.id);
+      startTimeRef.current = new Date();
+    }
+  }, [workout, currentUser, startSession, getIncompleteSession]);
 
   const handleSelectExercise = useCallback((exerciseId: string) => {
     setActiveExerciseId(exerciseId);
@@ -70,6 +89,12 @@ export default function ActiveWorkoutPage() {
     if (!sessionId) return;
     completeSession(sessionId);
     navigate(`/session/${sessionId}`, { replace: true });
+  };
+
+  const handleDiscard = () => {
+    if (!sessionId) return;
+    deleteSession(sessionId);
+    navigate('/', { replace: true });
   };
 
   if (!workout || !currentUser) {
@@ -162,12 +187,21 @@ export default function ActiveWorkoutPage() {
             <p className="text-muted" style={{ marginBottom: 20, fontSize: 15 }}>
               Dokončeno {doneCount} / {totalExercises} cviků.
             </p>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn-secondary" onClick={() => setShowFinishDialog(false)} style={{ flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button className="btn-secondary" onClick={() => setShowFinishDialog(false)}>
                 Pokračovat
               </button>
-              <button className="btn-primary" onClick={handleFinish} style={{ flex: 1 }}>
-                Ukončit
+              {doneCount > 0 && (
+                <button className="btn-primary" onClick={handleFinish}>
+                  Uložit trénink
+                </button>
+              )}
+              <button
+                className="btn-ghost"
+                onClick={handleDiscard}
+                style={{ color: 'var(--red, #ef4444)' }}
+              >
+                Zahodit trénink
               </button>
             </div>
           </div>

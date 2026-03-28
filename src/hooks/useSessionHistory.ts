@@ -126,6 +126,22 @@ export function useSessionHistory() {
     [sessions]
   );
 
+  const getIncompleteSession = useCallback(
+    (userId: string, workoutId: string) => {
+      return sessions.find(
+        (s) => s.userId === userId && s.workoutId === workoutId && !s.completed
+      ) ?? null;
+    },
+    [sessions]
+  );
+
+  const deleteSession = useCallback(
+    (sessionId: string) => {
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    },
+    [setSessions]
+  );
+
   return {
     sessions,
     startSession,
@@ -137,5 +153,7 @@ export function useSessionHistory() {
     getExerciseHistory,
     getUserSessions,
     getSession,
+    getIncompleteSession,
+    deleteSession,
   };
 }
